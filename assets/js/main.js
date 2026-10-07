@@ -39,31 +39,63 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
     x.fillStyle = 'rgba(0,169,157,.5)'; for (const p of P) { x.beginPath(); x.arc(p.x, p.y, 1.3, 0, 7); x.fill(); } };
   if (RM) draw(); else (function f() { draw(); requestAnimationFrame(f); })();
 })();
-/* hero DNA helix (pseudo-3D canvas) */
-(() => { const c = $('#helix'); let x, W, H; const resize = () => [x, W, H] = fit(c); resize(); addEventListener('resize', resize);
-  const N = 46, meth = Array.from({ length: N }, (_, i) => Math.random() < .28), mouse = { x: -1e4, y: -1e4, tx: 0, ty: 0 }; let scrollY = 0, rot = 0;
-  c.closest('.hero').addEventListener('pointermove', e => { const r = c.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.tx = (e.clientX / innerWidth - .5); mouse.ty = (e.clientY / innerHeight - .5); });
-  c.closest('.hero').addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; });
-  c.closest('.hero').addEventListener('click', e => { const r = c.getBoundingClientRect(); let best = -1, bd = 40; pts.forEach((p, i) => { const d = Math.hypot(p[0] - (e.clientX - r.left), p[1] - (e.clientY - r.top)); if (d < bd) { bd = d; best = i; } }); if (best >= 0) meth[best >> 1] = !meth[best >> 1]; });
-  addEventListener('scroll', () => scrollY = scrollY * 0 + window.scrollY, { passive: true });
-  let pts = [];
-  const draw = (t) => { x.clearRect(0, 0, W, H); const mobile = W < 760;
-    const cx = mobile ? W * .5 : W * .72, len = mobile ? H * .55 : H * 1.05, top = mobile ? H * .06 : (H - len) / 2, amp = mobile ? Math.min(W * .32, 120) : Math.min(W * .14, 190);
-    rot = t * .55 + scrollY * .004 + mouse.tx * 1.2; const tiltX = mouse.ty * .35;
-    const S = []; pts = [];
-    for (let i = 0; i < N; i++) { const f = i / (N - 1), y = top + f * len, a = f * Math.PI * 4.2 + rot;
-      for (let s = 0; s < 2; s++) { const ang = a + s * Math.PI, z = Math.sin(ang), px = cx + Math.cos(ang) * amp + (y - H / 2) * tiltX * .3, py = y + z * 14 * tiltX; S.push({ i, s, x: px, y: py, z }); pts.push([px, py]); } }
-    // rungs
-    for (let i = 0; i < N; i++) { const a = S[i * 2], b = S[i * 2 + 1], z = (a.z + b.z) / 2, al = .18 + (z + 1) * .2;
-      const g = x.createLinearGradient(a.x, a.y, b.x, b.y); g.addColorStop(0, `rgba(0,169,157,${al})`); g.addColorStop(1, `rgba(109,75,255,${al})`); x.strokeStyle = g; x.lineWidth = 2; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
-    // backbones
-    for (let s = 0; s < 2; s++) { x.beginPath(); for (let i = 0; i < N; i++) { const p = S[i * 2 + s]; i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); } x.strokeStyle = s ? 'rgba(109,75,255,.55)' : 'rgba(0,169,157,.55)'; x.lineWidth = 2.5; x.stroke(); }
-    // nodes sorted by depth
-    S.slice().sort((p, q) => p.z - q.z).forEach(p => { const d = Math.hypot(p.x - mouse.x, p.y - mouse.y), near = Math.max(0, 1 - d / 160), r = 3 + (p.z + 1) * 2.2 + near * 4, m = meth[p.i] && p.s === 0;
-      x.beginPath(); x.arc(p.x, p.y, r, 0, 7); x.fillStyle = m ? `rgba(255,77,109,${.55 + (p.z + 1) * .22})` : (p.s ? `rgba(109,75,255,${.4 + (p.z + 1) * .28})` : `rgba(0,169,157,${.4 + (p.z + 1) * .28})`); x.shadowBlur = m ? 8 : near * 12; x.shadowColor = m ? '#ff4d6d' : (p.s ? '#6d4bff' : '#00a99d'); x.fill(); x.shadowBlur = 0;
-      if (m && p.z > .2) { x.font = '500 10px JetBrains Mono, monospace'; x.fillStyle = 'rgba(255,77,109,.85)'; x.fillText('CH₃', p.x + r + 4, p.y + 3); } });
-    if (!RM && Math.random() < .015) { const k = Math.floor(Math.random() * N); meth[k] = !meth[k]; }
-  };
+/* hero: DNA double helix with docking PTM-modified proteins (pseudo-3D canvas) */
+(() => { const c = $('#helix'), hero = c.closest('.hero'); let x, W, H; const resize = () => [x, W, H] = fit(c); resize(); addEventListener('resize', resize);
+  const MK = { Ac: { col: '#00a99d', tf: 'TF · acetyl-K', h: 'Histone H3 · K27ac' }, Me: { col: '#6d4bff', tf: 'TF · methyl-R', h: 'Histone H3 · K4me3' }, P: { col: '#e08a00', tf: 'TF · phospho-S', h: 'Histone H3 · S10ph' }, Ub: { col: '#e0336a', tf: 'TF · ubiquitin-K', h: 'Histone H2A · K119ub' } };
+  const ORDER = ['Ac', 'Me', 'P', 'Ub'], N = 56, mouse = { x: -1e4, y: -1e4, tx: 0, ty: 0 };
+  let scrollY = 0, rot = 0, hover = null, last = 0, pts = [];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  // proteins: nucleosomes sit on the helix axis, TFs clamp onto a strand
+  const P = [
+    { k: 'nuc', f: .3, marks: ['Ac', 'Me'] }, { k: 'tf', f: .45, side: 1, marks: ['P'] }, { k: 'nuc', f: .63, marks: ['Ub', 'Me'] },
+    { k: 'tf', f: .78, side: -1, marks: ['Ac'] }, { k: 'tf', f: .9, side: 1, marks: ['Me', 'P'] }, { k: 'tf', f: .17, side: -1, marks: ['Ub'] }
+  ].map((p, i) => Object.assign(p, { b: RM ? 1 : (i % 3 === 2 ? 0 : 1), st: RM ? 'on' : (i % 3 === 2 ? 'off' : 'on'), tmr: rnd(5, 12), dir: i % 2 ? 1 : -1, sx: 0, sy: 0, r: 0 }));
+  hero.addEventListener('pointermove', e => { const r = c.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.tx = e.clientX / innerWidth - .5; mouse.ty = e.clientY / innerHeight - .5; if (RM) draw(last); });
+  hero.addEventListener('pointerleave', () => { mouse.x = mouse.y = -1e4; hover = null; hero.style.cursor = ''; if (RM) draw(last); });
+  hero.addEventListener('click', e => { if (e.target.closest('a,button')) return; const r = c.getBoundingClientRect(); const p = hit(e.clientX - r.left, e.clientY - r.top);
+    if (p) { const i = ORDER.indexOf(p.marks[0]); p.marks[0] = ORDER[(i + 1) % 4]; p.tmr = Math.max(p.tmr, 3); hover = p; if (RM) draw(last); } });
+  addEventListener('scroll', () => scrollY = window.scrollY, { passive: true });
+  const hit = (mx, my) => P.find(p => p.b > .6 && Math.hypot(p.sx - mx, p.sy - my) < p.r + 8) || null;
+  const blob = (cx, cy, r, c1, c2, a) => { const g = x.createRadialGradient(cx - r * .35, cy - r * .4, r * .1, cx, cy, r); g.addColorStop(0, c1); g.addColorStop(1, c2); x.globalAlpha = a; x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 7); x.fill(); x.globalAlpha = 1; };
+  const chip = (cx, cy, m, a, big) => { const t = m, col = MK[m].col; x.font = `600 ${big ? 11 : 10}px JetBrains Mono, monospace`; const w = x.measureText(t).width + 10, h = big ? 18 : 16;
+    x.globalAlpha = a; x.fillStyle = col; x.beginPath(); x.roundRect(cx - w / 2, cy - h / 2, w, h, h / 2); x.fill(); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(t, cx, cy + .5); x.globalAlpha = 1; x.textAlign = 'left'; x.textBaseline = 'alphabetic'; };
+  function draw(t) { last = t; const dt = Math.min(.05, t - (draw.t || t)); draw.t = t; x.clearRect(0, 0, W, H); const mobile = W < 760;
+    const cx = mobile ? W * .5 : W * .72, len = mobile ? H * .58 : H * 1.05, top = mobile ? H * .05 : (H - len) / 2, amp = mobile ? Math.min(W * .26, 100) : Math.min(W * .11, 150), sc = mobile ? .8 : 1;
+    rot = t * .45 + scrollY * .004 + mouse.tx * 1.2; const tilt = mouse.ty * .35;
+    const S = []; for (let i = 0; i < N; i++) { const f = i / (N - 1), y = top + f * len, a = f * Math.PI * 5 + rot; for (let s = 0; s < 2; s++) { const ang = a + s * Math.PI, z = Math.sin(ang); S.push({ x: cx + Math.cos(ang) * amp + (y - H / 2) * tilt * .3, y: y + z * 12 * tilt, z }); } }
+    const at = f => { const i = Math.min(N - 2, Math.floor(f * (N - 1))), u = f * (N - 1) - i, A = S[i * 2], B = S[(i + 1) * 2], A2 = S[i * 2 + 1], B2 = S[(i + 1) * 2 + 1]; return [{ x: A.x + (B.x - A.x) * u, y: A.y + (B.y - A.y) * u, z: A.z }, { x: A2.x + (B2.x - A2.x) * u, y: A2.y + (B2.y - A2.y) * u, z: A2.z }]; };
+    // binding dynamics
+    for (const p of P) { if (RM) break; p.tmr -= dt;
+      if (p.st === 'on' && p.tmr <= 0 && p !== hover) { if (P.filter(q => q.st === 'on').length > 4) p.st = 'leaving'; else p.tmr = rnd(1, 3); } if (p.st === 'leaving') { p.b -= dt * .7; if (p.b <= 0) { p.b = 0; p.st = 'off'; p.tmr = rnd(1.5, 4); } }
+      if (p.st === 'off' && p.tmr <= 0) { p.st = 'docking'; p.marks[0] = ORDER[Math.floor(Math.random() * 4)]; } if (p.st === 'docking') { p.b += dt * .6; if (p.b >= 1) { p.b = 1; p.st = 'on'; p.tmr = rnd(5, 10); } } }
+    // back strands, rungs
+    for (let i = 0; i < N; i++) { const a = S[i * 2], b = S[i * 2 + 1], al = .14 + ((a.z + b.z) / 2 + 1) * .14; const g = x.createLinearGradient(a.x, a.y, b.x, b.y); g.addColorStop(0, `rgba(0,169,157,${al})`); g.addColorStop(1, `rgba(109,75,255,${al})`); x.strokeStyle = g; x.lineWidth = 2; x.beginPath(); x.moveTo(a.x, a.y); x.lineTo(b.x, b.y); x.stroke(); }
+    for (let s = 0; s < 2; s++) { x.beginPath(); for (let i = 0; i < N; i++) { const p = S[i * 2 + s]; i ? x.lineTo(p.x, p.y) : x.moveTo(p.x, p.y); } x.strokeStyle = s ? 'rgba(109,75,255,.6)' : 'rgba(0,169,157,.65)'; x.lineWidth = 3; x.stroke(); }
+    for (let i = 0; i < N; i++) for (let s = 0; s < 2; s++) { const p = S[i * 2 + s]; x.beginPath(); x.arc(p.x, p.y, 1.8 + (p.z + 1) * 1.4, 0, 7); x.fillStyle = s ? `rgba(109,75,255,${.35 + (p.z + 1) * .3})` : `rgba(0,169,157,${.35 + (p.z + 1) * .3})`; x.fill(); }
+    // proteins
+    let hv = null;
+    for (const p of P) { if (p.b <= 0) continue; const e = RM ? 1 : (p.b < 1 ? (p.st === 'docking' ? 1 - Math.pow(1 - p.b, 3) : p.b * p.b) : 1), off = (1 - e) * 140 * p.dir * sc, a = Math.min(1, e * 1.2);
+      const [s0, s1] = at(p.f);
+      if (p.k === 'nuc') { const R = 50 * sc, px = cx + off + (s0.x + s1.x - 2 * cx) * .15, py = (s0.y + s1.y) / 2; p.sx = px; p.sy = py; p.r = R + 6;
+        x.save(); x.shadowColor = 'rgba(11,21,51,.16)'; x.shadowBlur = 18; x.shadowOffsetY = 6; blob(px, py, R * 1.02, `rgba(238,236,255,${a})`, `rgba(150,138,255,${a})`, 1); x.restore();
+        [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([u, v], j) => blob(px + u * R * .4, py + v * R * .36, R * .48, '#f4f2ff', j % 2 ? '#8c7dff' : '#6f8dff', a));
+        // DNA wrapping (~1.7 turns) in front of the octamer
+        x.globalAlpha = a; x.lineWidth = 7 * sc; x.lineCap = 'round'; const wg = x.createLinearGradient(px - R, py, px + R, py); wg.addColorStop(0, '#00a99d'); wg.addColorStop(.5, '#0b8fb0'); wg.addColorStop(1, '#00a99d'); x.strokeStyle = wg; x.shadowColor = 'rgba(11,21,51,.25)'; x.shadowBlur = 4;
+        for (let k = 0; k < 2; k++) { x.beginPath(); x.ellipse(px, py + (k - .5) * R * .5, R * 1.08, R * .32, -.12, -.15 * Math.PI, 1.15 * Math.PI, true); x.stroke(); }
+        x.globalAlpha = 1; x.lineCap = 'butt'; x.shadowBlur = 0;
+        p.marks.forEach((m, j) => { const ang = -Math.PI * .75 + j * Math.PI * .5 + Math.sin(t * 1.4 + j) * .06, tx = px + Math.cos(ang) * R * 1.55, ty = py + Math.sin(ang) * R * 1.35;
+          x.strokeStyle = `rgba(11,21,51,${.35 * a})`; x.lineWidth = 1.5; x.beginPath(); x.moveTo(px + Math.cos(ang) * R * .8, py + Math.sin(ang) * R * .75); x.quadraticCurveTo(px + Math.cos(ang + .3) * R * 1.25, py + Math.sin(ang + .3) * R * 1.1, tx, ty); x.stroke(); chip(tx, ty, m, a, !mobile); });
+      } else { const s = p.side > 0 ? s0 : s1, R = 21 * sc, px = s.x + off, py = s.y; p.sx = px; p.sy = py; p.r = R * 1.6;
+        x.save(); x.shadowColor = 'rgba(11,21,51,.14)'; x.shadowBlur = 12; x.shadowOffsetY = 4; blob(px - R * .55, py - R * .35, R, '#fff1f3', '#ff6f8c', a); blob(px + R * .55, py + R * .35, R, '#fff6ea', '#ffa94d', a); x.restore();
+        x.globalAlpha = a; x.strokeStyle = 'rgba(255,255,255,.8)'; x.lineWidth = 1.5; x.beginPath(); x.arc(px - R * .55, py - R * .35, R, 0, 7); x.stroke(); x.beginPath(); x.arc(px + R * .55, py + R * .35, R, 0, 7); x.stroke(); x.globalAlpha = 1;
+        p.marks.forEach((m, j) => { const tx = px + (j ? -1 : 1) * R * 1.9, ty = py - R * 1.5 - j * 4; x.strokeStyle = `rgba(11,21,51,${.3 * a})`; x.lineWidth = 1.3; x.beginPath(); x.moveTo(px + (j ? -1 : 1) * R * .7, py - R * .6); x.lineTo(tx, ty + 6); x.stroke(); chip(tx, ty, m, a, !mobile); }); }
+      if (p.b > .6 && Math.hypot(p.sx - mouse.x, p.sy - mouse.y) < p.r + 8) hv = p; }
+    hover = hv; hero.style.cursor = hv ? 'pointer' : '';
+    if (hv) { const lab = hv.k === 'nuc' ? MK[hv.marks[0]].h : MK[hv.marks[0]].tf, sub = hv.k === 'nuc' ? 'Nucleosome · click to change PTM' : 'Transcription factor · click to change PTM';
+      x.font = '600 12px Inter, sans-serif'; const w = Math.max(x.measureText(lab).width, (x.font = '11px Inter, sans-serif', x.measureText(sub).width)) + 24; let tx = hv.sx + hv.r + 10, ty = Math.max(80, Math.min(H - 56, hv.sy - 26)); if (tx + w > W - 8) tx = hv.sx - hv.r - 10 - w;
+      x.save(); x.shadowColor = 'rgba(11,21,51,.18)'; x.shadowBlur = 16; x.shadowOffsetY = 4; x.fillStyle = 'rgba(255,255,255,.97)'; x.beginPath(); x.roundRect(tx, ty, w, 46, 10); x.fill(); x.restore();
+      x.fillStyle = MK[hv.marks[0]].col; x.beginPath(); x.arc(tx + 13, ty + 16, 4, 0, 7); x.fill(); x.fillStyle = '#0b1533'; x.font = '600 12px Inter, sans-serif'; x.fillText(lab, tx + 22, ty + 20); x.fillStyle = '#4d5a78'; x.font = '11px Inter, sans-serif'; x.fillText(sub, tx + 12, ty + 36); }
+  }
   RM ? draw(0) : loop(c, draw);
 })();
 /* service card mini-visuals (SVG) */
