@@ -66,7 +66,7 @@ async function epmc(t) {
       const a = document.createElement('a'); a.className = 'news-card glass'; a.href = i.url; a.target = '_blank'; a.rel = 'noopener';
       a.style.setProperty('--d', (n % 12) * 40 + 'ms');
       const t = TOPICS.find(t => t.id === i.topics[0]);
-      a.style.setProperty('--c', t ? t.color : '#00f5d4');
+      a.style.setProperty('--c', t ? t.color : '#00a99d');
       a.innerHTML = `<div class="nc-top"><span class="badge src-${i.source.replace(/\s/g, '').toLowerCase()}"></span><time></time></div><h4></h4><p></p><div class="nc-foot"><span class="venue"></span><span class="tags"></span></div>`;
       a.querySelector('.badge').textContent = i.source; a.querySelector('time').textContent = i.date ? new Date(i.date + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
       a.querySelector('h4').textContent = i.title; a.querySelector('p').textContent = i.summary; a.querySelector('.venue').textContent = i.venue;
@@ -93,7 +93,7 @@ async function epmc(t) {
   }
   // controls
   const chips = $('.chips', root);
-  [{ id: 'all', label: 'All', color: '#e6f1ff' }, ...TOPICS].forEach(t => {
+  [{ id: 'all', label: 'All', color: '#0b1533' }, ...TOPICS].forEach(t => {
     const b = document.createElement('button'); b.className = 'chip'; b.textContent = t.label; b.style.setProperty('--c', t.color);
     b.setAttribute('aria-pressed', t.id === 'all'); b.onclick = () => { state.topic = t.id; state.shown = 12; chips.querySelectorAll('.chip').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); };
     chips.appendChild(b);

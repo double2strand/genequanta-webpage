@@ -1,5 +1,7 @@
 # GeneQuanta website
 
+Live: https://double2strand.github.io/genequanta-webpage/ (repo `double2strand/genequanta-webpage`)
+
 Static site, no build step. GitHub Pages: Settings → Pages → Deploy from branch → `main` / root.
 
 ## Live news feed
