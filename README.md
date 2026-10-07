@@ -10,3 +10,4 @@ Static site, no build step. GitHub Pages: Settings → Pages → Deploy from bra
 - If live APIs fail, the page falls back to `data/news.json` (a bundled snapshot).
 - Optional: `.github/workflows/refresh-news.yml` regenerates `data/news.json` daily (also adds Nature epigenetics RSS + GEN, which can't be fetched from a browser). The site works without it.
 - Manual refresh of the snapshot: `node scripts/refresh_news.mjs` (Node 18+).
+
