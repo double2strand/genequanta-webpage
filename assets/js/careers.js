@@ -12,8 +12,8 @@ const yr = $('#yr'); if (yr) yr.textContent = new Date().getFullYear() || 2026;
 (() => { const c = $('#bg-net'), x = c.getContext('2d'), D = Math.min(devicePixelRatio || 1, 2); let W, H, P = [];
   const init = () => { W = innerWidth; H = innerHeight; c.width = W * D; c.height = H * D; x.setTransform(D, 0, 0, D, 0, 0); P = Array.from({ length: Math.min(55, Math.floor(W * H / 26000)) }, () => ({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .2, vy: (Math.random() - .5) * .2 })); };
   const draw = () => { x.clearRect(0, 0, W, H); for (const p of P) { p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1; }
-    for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) { const d = Math.hypot(P[i].x - P[j].x, P[i].y - P[j].y); if (d < 130) { x.strokeStyle = `rgba(47,91,255,${(1 - d / 130) * .18})`; x.beginPath(); x.moveTo(P[i].x, P[i].y); x.lineTo(P[j].x, P[j].y); x.stroke(); } }
-    x.fillStyle = 'rgba(0,169,157,.45)'; for (const p of P) { x.beginPath(); x.arc(p.x, p.y, 1.3, 0, 7); x.fill(); } if (!RM) requestAnimationFrame(draw); };
+    for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) { const d = Math.hypot(P[i].x - P[j].x, P[i].y - P[j].y); if (d < 130) { x.strokeStyle = `rgba(214,218,226,${(1 - d / 130) * .1})`; x.beginPath(); x.moveTo(P[i].x, P[i].y); x.lineTo(P[j].x, P[j].y); x.stroke(); } }
+    x.fillStyle = 'rgba(220,224,230,.3)'; for (const p of P) { x.beginPath(); x.arc(p.x, p.y, 1.3, 0, 7); x.fill(); } if (!RM) requestAnimationFrame(draw); };
   init(); addEventListener('resize', init); draw(); })();
 
 /* roles list */

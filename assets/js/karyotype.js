@@ -8,9 +8,9 @@
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const mb = (bp, d = 1) => (bp / 1e6).toFixed(d);
-  const CAT = { Disease: { c: '#e0336a', k: 'dis' }, Lifestyle: { c: '#00a99d', k: 'life' }, Longevity: { c: '#6d4bff', k: 'long' } };
+  const CAT = { Disease: { c: '#f08a9c', k: 'dis' }, Lifestyle: { c: '#5ccbb8', k: 'life' }, Longevity: { c: '#d9b660', k: 'long' } };
   // UCSC gieStain order used in the data file: gneg, gpos25, gpos50, gpos75, gpos100, acen, gvar, stalk
-  const STAIN = ['#ffffff', '#d5d9e6', '#a4abc4', '#6b7393', '#2b3152', '#f2a7bd', '#c7d5f5', '#eef1f8'];
+  const STAIN = ['#eceef1', '#c3c6cc', '#959aa2', '#666a72', '#383b41', '#c98b97', '#9db3c9', '#d5d8dc'];
   const STAIN_N = ['gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100', 'acen', 'gvar', 'stalk'];
   const tabs = $$('.seg [data-s]', root), grid = $('#k-grid', root), det = $('#k-detail', root),
     body = $('#k-panel', root), soon = $('#k-soon', root), sel = $('#k-sel', root);
@@ -32,19 +32,19 @@
         ? `<rect x="${x}" y="2" width="${cw}" height="${Math.max(cw, y(cm) - 2)}" rx="${cw / 2}"/><rect x="${x}" y="${y(cm)}" width="${cw}" height="${Math.max(cw, h - 2 - y(cm))}" rx="${cw / 2}"/>`
         : `<rect x="${x}" y="2" width="${cw}" height="${h - 4}" rx="${cw / 2}"/>`) + `</clipPath>`;
     }
-    s += `<linearGradient id="${id}-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(${hue},75%,62%)"/><stop offset="1" stop-color="hsl(${hue + 22},70%,48%)"/></linearGradient></defs>`;
+    s += `<linearGradient id="${id}-g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7d828b"/><stop offset=".45" stop-color="#eceef0"/><stop offset="1" stop-color="#9a9ea6"/></linearGradient></defs>`;
     for (let k = 0; k < 2; k++) {
       const x = x0 + k * (cw + gap);
       s += `<g clip-path="url(#${id}-${k})">`;
       if (c.bands) c.bands.forEach(b => { s += `<rect x="${x}" y="${y(b[0])}" width="${cw}" height="${Math.max(.6, y(b[1]) - y(b[0]))}" fill="${STAIN[b[3]]}"/>`; });
       else s += `<rect x="${x}" y="0" width="${cw}" height="${h}" fill="url(#${id}-g)"/>`;
-      if (acro) s += `<rect x="${x}" y="2" width="${cw}" height="2.2" fill="rgba(11,21,51,.55)"/>`;
-      s += `</g><g fill="none" stroke="rgba(11,21,51,.28)" stroke-width=".8">` + (cm && !acro
+      if (acro) s += `<rect x="${x}" y="2" width="${cw}" height="2.2" fill="#2a2c31"/>`;
+      s += `</g><g fill="none" stroke="rgba(255,255,255,.3)" stroke-width=".8">` + (cm && !acro
         ? `<rect x="${x}" y="2" width="${cw}" height="${Math.max(cw, y(cm) - 2)}" rx="${cw / 2}"/><rect x="${x}" y="${y(cm)}" width="${cw}" height="${Math.max(cw, h - 2 - y(cm))}" rx="${cw / 2}"/>`
         : `<rect x="${x}" y="2" width="${cw}" height="${h - 4}" rx="${cw / 2}"/>`) + `</g>`;
     }
     const lc = CAT[c.locus.cat].c, sites = c.locus.sites || [[c.locus.start, c.locus.end]];
-    sites.forEach(t => { const ly = y((t[0] + t[1]) / 2); s += `<rect class="k-tick" x="${x0 - 1.5}" y="${ly - 1}" width="${2 * cw + gap + 3}" height="2" rx="1" fill="${lc}"/>`; });
+    sites.forEach(t => { const ly = y((t[0] + t[1]) / 2); s += `<rect class="k-tick" x="${x0 - 1.5}" y="${ly - 1.2}" width="${2 * cw + gap + 3}" height="2.4" rx="1.2" fill="${lc}" stroke="#0b0b0d" stroke-width=".7" paint-order="stroke"/>`; });
     return s + '</svg>';
   }
 
@@ -87,16 +87,16 @@
     const caps = arms.map(([a, b]) => `<rect x="${a}" y="${iy}" width="${Math.max(ih, b - a)}" height="${ih}" rx="${ih / 2}"/>`).join('');
     let s = `<svg class="kd-svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(nm(c))} ideogram, ${mb(c.len)} megabases, with ${esc(c.locus.gene)} highlighted">
       <defs><clipPath id="${id}-c">${caps}</clipPath>
-      <linearGradient id="${id}-g" x1="0" x2="1"><stop offset="0" stop-color="#3fc1b5"/><stop offset=".5" stop-color="#5b7cff"/><stop offset="1" stop-color="#8a6dff"/></linearGradient>
-      <linearGradient id="${id}-sh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#0b1533" stop-opacity=".12"/></linearGradient></defs>
+      <linearGradient id="${id}-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0f1f3"/><stop offset=".5" stop-color="#b9bcc2"/><stop offset="1" stop-color="#7d828b"/></linearGradient>
+      <linearGradient id="${id}-sh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".18"/></linearGradient></defs>
       <g class="kd-ideo"><g clip-path="url(#${id}-c)">`;
     if (c.bands) c.bands.forEach(b => { s += `<rect x="${x(b[0])}" y="${iy}" width="${Math.max(.5, x(b[1]) - x(b[0]))}" height="${ih}" fill="${STAIN[b[3]]}"><title>${esc(c.id + b[2])} (${STAIN_N[b[3]]})</title></rect>`; });
     else s += `<rect x="${L}" y="${iy}" width="${R - L}" height="${ih}" fill="url(#${id}-g)"/>`;
-    if (acro) s += `<rect x="${L}" y="${iy}" width="7" height="${ih}" fill="rgba(11,21,51,.55)"/>`;
+    if (acro) s += `<rect x="${L}" y="${iy}" width="7" height="${ih}" fill="#2a2c31"/>`;
     s += `<rect x="${L}" y="${iy}" width="${R - L}" height="${ih}" fill="url(#${id}-sh)"/></g>
-      <g fill="none" stroke="rgba(11,21,51,.35)" stroke-width="1">${caps}</g>`;
+      <g fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1">${caps}</g>`;
     // arm / centromere labels
-    if (cm && !acro) s += `<text class="kd-arm" x="${(L + x(cm)) / 2}" y="${iy - 6}">p</text><text class="kd-arm" x="${(x(cm) + R) / 2}" y="${iy - 6}">q</text><path d="M${x(cm)} ${iy + ih + 3}l-4 6h8z" fill="rgba(11,21,51,.45)"/>`;
+    if (cm && !acro) s += `<text class="kd-arm" x="${(L + x(cm)) / 2}" y="${iy - 6}">p</text><text class="kd-arm" x="${(x(cm) + R) / 2}" y="${iy - 6}">q</text><path d="M${x(cm)} ${iy + ih + 3}l-4 6h8z" fill="rgba(255,255,255,.55)"/>`;
     else if (acro) s += `<text class="kd-arm" x="${L + 2}" y="${iy - 6}" text-anchor="start">cen ▸ q</text>`;
     s += `</g>`;
     // highlight: human = the band(s) containing the gene; others = coordinate window
