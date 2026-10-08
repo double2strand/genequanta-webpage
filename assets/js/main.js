@@ -109,7 +109,7 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
 /* pipeline explorer */
 (() => { const D = [
   { t: 'Time-Course Analysis', d: 'Advanced temporal profiling of epigenetic changes over time periods', b: ['Dynamic Tracking', 'Temporal Patterns', 'Longitudinal Studies'] },
-  { t: 'Epigenetic Profiling', d: 'Comprehensive methylation and histone modification analysis', b: ['DNA Methylation', 'Histone Marks', 'Chromatin States'] },
+  { t: 'Epigenetic Profiling', d: 'Profiling of post-translationally modified proteins (histones and transcription factors) bound to DNA', b: ['Histone PTMs', 'Transcription Factors', 'Protein–DNA Binding'] },
   { t: 'High-Throughput Processing', d: 'Scalable biomarker panel development and analysis', b: ['Batch Processing', 'Quality Control', 'Automated Workflows'] },
   { t: 'Real-Time Analytics', d: 'Instant data processing and visualization capabilities', b: ['Live Updates', 'Interactive Dashboards', 'API Access'] }];
   let cur = 0, timer; const btns = $$('.pipe-steps button'), c = $('#pipe-viz'); let x, W, H; const rs = () => [x, W, H] = fit(c); rs(); addEventListener('resize', rs);
@@ -122,12 +122,27 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
       const T = 6; for (let k = 0; k < 5; k++) { x.beginPath(); for (let i = 0; i <= 60; i++) { const X = 30 + i / 60 * (W - 60), v = .5 + .35 * Math.sin(i / 60 * 5 + k * 1.3 + t * .6) * Math.cos(k + i / 30); i ? x.lineTo(X, 30 + v * (H - 60)) : x.moveTo(X, 30 + v * (H - 60)); } x.strokeStyle = ['#00a99d', '#6d4bff', '#ff4d6d', '#f59e0b', '#2f7bff'][k]; x.lineWidth = 2; x.globalAlpha = .8; x.stroke(); x.globalAlpha = 1; }
       for (let i = 0; i < T; i++) { const X = 30 + i / (T - 1) * (W - 60); x.fillStyle = 'rgba(11,21,51,.55)'; x.font = '10px JetBrains Mono'; x.fillText('T' + i, X - 6, H - 10); }
       const sx = 30 + ((t * .15) % 1) * (W - 60); x.strokeStyle = 'rgba(0,169,157,.6)'; x.beginPath(); x.moveTo(sx, 20); x.lineTo(sx, H - 24); x.stroke();
-    } else if (cur === 1) { // profiling: CpG lollipop + histone marks
-      const n = 28; for (let i = 0; i < n; i++) { const X = 24 + i * (W - 48) / (n - 1), lvl = (Math.sin(i * 2.3) + 1) / 2, on = lvl > .5; x.strokeStyle = 'rgba(11,21,51,.25)'; x.beginPath(); x.moveTo(X, H * .62); x.lineTo(X, H * .38); x.stroke();
-        x.beginPath(); x.arc(X, H * .38, 6, 0, 7); x.fillStyle = on ? '#ff4d6d' : '#fff'; x.strokeStyle = on ? '#ff4d6d' : '#2f7bff'; x.fill(); x.stroke(); }
-      x.fillStyle = 'rgba(109,75,255,.5)'; x.fillRect(24, H * .62, W - 48, 4);
-      for (let i = 0; i < 9; i++) { const X = 40 + i * (W - 80) / 8, r = 14 + Math.sin(t * 2 + i) * 1.5; x.beginPath(); x.arc(X, H * .78, r, 0, 7); x.fillStyle = 'rgba(109,75,255,.25)'; x.strokeStyle = '#6d4bff'; x.fill(); x.stroke(); x.fillStyle = '#f59e0b'; x.font = '9px JetBrains Mono'; x.fillText(['ac', 'me3', 'me1', 'ac', 'me2', 'ub', 'me3', 'ac', 'ph'][i], X - 7, H * .78 + 3); }
-      x.fillStyle = 'rgba(11,21,51,.6)'; x.font = '10px JetBrains Mono'; x.fillText('CpG methylation', 24, 20); x.fillText('nucleosomes · histone marks', 24, H - 8);
+    } else if (cur === 1) { // profiling: PTM-modified proteins bound along DNA + occupancy track
+      const PK = [{ u: .12, k: 'tf', m: 'P' }, { u: .3, k: 'nuc', m: 'Ac' }, { u: .5, k: 'tf', m: 'Me' }, { u: .68, k: 'nuc', m: 'Ub' }, { u: .86, k: 'nuc', m: 'Me' }];
+      const MC = { Ac: '#00a99d', Me: '#6d4bff', P: '#e08a00', Ub: '#e0336a' }, L = 24, Rr = W - 24, dy = H * .66, tb = H * .36;
+      // occupancy track
+      const occ = X => PK.reduce((a, p, i) => a + (p.k === 'nuc' ? .9 : .7) * (0.85 + .15 * Math.sin(t * 1.6 + i)) * Math.exp(-(((X - L) / (Rr - L) - p.u) ** 2) / (p.k === 'nuc' ? .0016 : .0007)), 0) + .04;
+      x.beginPath(); x.moveTo(L, tb); for (let X = L; X <= Rr; X += 3) x.lineTo(X, tb - occ(X) * (tb - 34)); x.lineTo(Rr, tb); x.closePath();
+      const og = x.createLinearGradient(L, 0, Rr, 0); PK.forEach(p => og.addColorStop(p.u, MC[p.m])); x.globalAlpha = .22; x.fillStyle = og; x.fill(); x.globalAlpha = 1;
+      x.beginPath(); for (let X = L; X <= Rr; X += 3) { const Y = tb - occ(X) * (tb - 34); X === L ? x.moveTo(X, Y) : x.lineTo(X, Y); } x.strokeStyle = og; x.lineWidth = 2; x.stroke();
+      x.strokeStyle = 'rgba(11,21,51,.15)'; x.lineWidth = 1; x.beginPath(); x.moveTo(L, tb); x.lineTo(Rr, tb); x.stroke();
+      // DNA double strand
+      for (let s2 = 0; s2 < 2; s2++) { x.beginPath(); for (let X = L; X <= Rr; X += 3) { const Y = dy + Math.sin((X - L) * .09 + t * 1.2 + s2 * Math.PI) * 7; X === L ? x.moveTo(X, Y) : x.lineTo(X, Y); } x.strokeStyle = s2 ? 'rgba(109,75,255,.7)' : 'rgba(0,169,157,.75)'; x.lineWidth = 2.5; x.stroke(); }
+      for (let X = L; X <= Rr; X += 9) { x.strokeStyle = 'rgba(11,21,51,.10)'; x.lineWidth = 1.5; x.beginPath(); x.moveTo(X, dy - 6); x.lineTo(X, dy + 6); x.stroke(); }
+      // bound proteins with PTM chips
+      PK.forEach((p, i) => { const X = L + p.u * (Rr - L), bob = Math.sin(t * 1.6 + i) * 1.5;
+        x.strokeStyle = 'rgba(11,21,51,.12)'; x.setLineDash([2, 3]); x.beginPath(); x.moveTo(X, tb + 2); x.lineTo(X, dy - 24); x.stroke(); x.setLineDash([]);
+        x.save(); x.shadowColor = 'rgba(11,21,51,.16)'; x.shadowBlur = 8; x.shadowOffsetY = 3;
+        if (p.k === 'nuc') { const r = 19; const g = x.createRadialGradient(X - 6, dy - 6 + bob, 2, X, dy + bob, r); g.addColorStop(0, '#f1efff'); g.addColorStop(1, '#8c7dff'); x.fillStyle = g; x.beginPath(); x.arc(X, dy + bob, r, 0, 7); x.fill(); x.restore();
+          x.strokeStyle = '#00a99d'; x.lineWidth = 3.5; x.lineCap = 'round'; for (let k = 0; k < 2; k++) { x.beginPath(); x.ellipse(X, dy + bob + (k - .5) * 9, r * 1.1, 5, -.1, Math.PI * 1.05, Math.PI * -.05, true); x.stroke(); } x.lineCap = 'butt'; }
+        else { const r = 10; [[-6, -3, '#ff6f8c'], [6, 3, '#ffa94d']].forEach(([ox, oy, c2]) => { const g = x.createRadialGradient(X + ox - 3, dy - 10 + oy - 3 + bob, 1, X + ox, dy - 10 + oy + bob, r); g.addColorStop(0, '#fff'); g.addColorStop(1, c2); x.fillStyle = g; x.beginPath(); x.arc(X + ox, dy - 10 + oy + bob, r, 0, 7); x.fill(); }); x.restore(); }
+        const cy = dy - (p.k === 'nuc' ? 34 : 34) + bob; x.font = '600 10px JetBrains Mono'; const w = x.measureText(p.m).width + 10; x.fillStyle = MC[p.m]; x.beginPath(); x.roundRect(X - w / 2 + (p.k === 'nuc' ? 14 : 12), cy - 8, w, 16, 8); x.fill(); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.m, X + (p.k === 'nuc' ? 14 : 12), cy + .5); x.textAlign = 'left'; x.textBaseline = 'alphabetic'; });
+      x.fillStyle = 'rgba(11,21,51,.62)'; x.font = '10px JetBrains Mono'; x.fillText('modified-protein occupancy', 24, 18); x.fillText(W < 520 ? 'DNA · bound nucleosomes & TFs' : 'DNA · nucleosomes & TFs carrying PTMs (Ac · Me · P · Ub)', 24, H - 10);
     } else if (cur === 2) { // HT: plate wells lighting in sequence
       const R = 8, C = 12, cw = (W - 40) / C, ch = (H - 40) / R, k = Math.floor(t * 14) % (R * C);
       for (let r = 0; r < R; r++) for (let cc = 0; cc < C; cc++) { const id = r * C + cc, done = id < k, v = (Math.sin(id * 12.9898) * 43758.5453) % 1; x.beginPath(); x.arc(20 + cw * (cc + .5), 20 + ch * (r + .5), Math.min(cw, ch) * .32, 0, 7);
@@ -163,8 +178,6 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
     const st = t => { const p = RM ? 1 : Math.min(1, (t - t0) / 600); el.textContent = Math.round(from + (to - from) * p); if (p < 1) requestAnimationFrame(st); }; requestAnimationFrame(st); $('#k-p').textContent = S[sp][1]; draw(sp); };
   $$('[data-s]').forEach(b => b.onclick = () => set(b.dataset.s)); set('human');
 })();
-/* news tabs */
-$$('[data-n]').forEach(b => b.onclick = () => { $$('[data-n]').forEach(o => o.setAttribute('aria-selected', o === b)); $('#news-live').hidden = b.dataset.n !== 'live'; $('#news-co').hidden = b.dataset.n === 'live'; });
 /* contact */
 (() => { const f = $('#cform'), types = $$('[role=radio]', f); let type = 'General Inquiry';
   const pick = name => types.forEach(b => { const on = b.textContent === name; b.setAttribute('aria-checked', on); if (on) type = name; });
