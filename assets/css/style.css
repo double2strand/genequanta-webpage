@@ -125,3 +125,9 @@ input,select,textarea{width:100%;background:#fff;border:1px solid var(--line);bo
 .tlm li{position:relative;padding:1.6rem 1.2rem 0 0;display:grid;gap:.25rem;align-content:start}.tlm li::before{content:"";position:absolute;top:0;left:0;width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--a)}.tlm li.done::before{background:var(--a)}
 .tlm li.now::before{background:#fff;border-color:var(--t);box-shadow:0 0 0 5px rgba(0,169,157,.15);animation:pulse 2.4s infinite}.tlm .when{font-size:.75rem;color:var(--mut);text-transform:uppercase;letter-spacing:.12em}.tlm .what{font:500 1.02rem var(--h);color:var(--ink)}.tlm em{display:block;font:400 .78rem var(--f);font-style:normal;color:var(--mut)}.tlm li.now .when{color:#00756f}.tlm li.now em{color:#00756f}
 @media (max-width:760px){.tlm{grid-template-columns:1fr;gap:1.3rem;padding-left:1.6rem}.tlm::before{left:5px;right:auto;top:5px;bottom:5px;width:1px;height:auto;background:linear-gradient(180deg,rgba(47,91,255,.5) 0 66%,rgba(11,21,51,.15) 66%)}.tlm li{padding:0}.tlm li::before{left:-1.6rem;top:3px}.person{flex-direction:row;align-items:center}.person .avatar{width:80px;height:80px}}
+/* team: LinkedIn links */
+.p-links{display:flex;align-items:center;gap:.6rem;margin-top:.6rem;flex-wrap:wrap}.p-links .pill{margin-top:0}
+.li-link{width:34px;height:34px;display:inline-grid;place-items:center;border-radius:10px;background:#fff;border:1px solid var(--line);color:#0a66c2;box-shadow:0 2px 6px -3px rgba(11,21,51,.25);transition:transform .2s,box-shadow .2s,border-color .2s}
+.li-link svg{width:18px;height:18px;fill:currentColor;display:block}
+.li-link:hover{transform:translateY(-2px);border-color:rgba(10,102,194,.45);box-shadow:0 8px 18px -8px rgba(10,102,194,.45)}
+.li-link:focus-visible{outline:2px solid var(--a);outline-offset:2px}

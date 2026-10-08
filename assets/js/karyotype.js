@@ -12,11 +12,6 @@
   // UCSC gieStain order used in the data file: gneg, gpos25, gpos50, gpos75, gpos100, acen, gvar, stalk
   const STAIN = ['#ffffff', '#d5d9e6', '#a4abc4', '#6b7393', '#2b3152', '#f2a7bd', '#c7d5f5', '#eef1f8'];
   const STAIN_N = ['gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100', 'acen', 'gvar', 'stalk'];
-  const CAP = {
-    human: 'Lengths drawn to scale from the GRCh38 (hg38) assembly; G-bands from UCSC cytoBand. Click or tap a chromosome to zoom in.',
-    dog: 'Lengths drawn to scale from ROS_Cfam_1.0 (Y: ROS_Cfam_2.0_pri). All 38 autosomes are acrocentric. No G-bands drawn; genes are placed by genome coordinate. Click or tap to zoom in.',
-    cat: 'Lengths drawn to scale from Felis_catus_9.0 (Y: F.catus_OcraZ1_1.0); centromeres from the assembly. No G-bands drawn; genes are placed by genome coordinate. Click or tap to zoom in.'
-  };
   const tabs = $$('.seg [data-s]', root), grid = $('#k-grid', root), det = $('#k-detail', root),
     body = $('#k-panel', root), soon = $('#k-soon', root), sel = $('#k-sel', root);
   let sp = 'human', cur = -1, lastBtn = null, uid = 0;
@@ -228,8 +223,8 @@
     const st = t => { const p = RM ? 1 : Math.min(1, (t - t0) / 600); el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))); if (p < 1) counterRaf = requestAnimationFrame(st); };
     counterRaf = requestAnimationFrame(st);
     $('#k-p', root).textContent = `${sd.pairs} pairs · ${sd.auto} autosomes + XX/XY`;
-    $('#k-sp', root).innerHTML = `<i>${esc(sd.latin)}</i> · ${esc(sd.assembly)}`;
-    $('#k-cap', root).textContent = CAP[s];
+    $('#k-sp', root).innerHTML = `<i>${esc(sd.latin)}</i>`;
+    $('#k-cap', root).textContent = 'Click or tap to zoom in.';
     sel.textContent = '';
     renderGrid();
   }
