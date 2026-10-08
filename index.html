@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/karyotype.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -90,10 +91,32 @@
     <div class="val glass reveal"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c6 6 6 28 0 34M24 7c-6 6-6 28 0 34"/></svg><h4>Impact</h4><p>Advancing global health through collaborative research and data sharing.</p></div>
   </div>
 
-  <div class="karyo glass reveal">
+  <div class="karyo glass reveal" id="karyo">
     <div class="k-head"><div><h3>Comparative Chromosome Analysis</h3><p>Compare chromosomal structures across different species</p></div>
-      <div class="seg" role="tablist" aria-label="Species"><button role="tab" aria-selected="true" data-s="human">Human</button><button role="tab" aria-selected="false" data-s="dog">Dog</button><button role="tab" aria-selected="false" data-s="cat">Cat</button></div></div>
-    <div class="k-body"><div class="k-info"><p class="k-num"><span id="k-n">46</span><small>chromosomes</small></p><p id="k-p" class="mono">23 pairs</p><p class="muted small">Schematic karyotype. Hover or tap a pair to highlight it. Relative lengths are illustrative.</p><p id="k-sel" class="mono small"></p></div><svg id="k-svg" role="img" aria-label="Schematic karyotype"></svg></div>
+      <div class="seg" role="tablist" aria-label="Species"><button role="tab" id="kt-human" aria-selected="true" aria-controls="k-panel" data-s="human">Human</button><button role="tab" id="kt-dog" aria-selected="false" aria-controls="k-panel" data-s="dog" tabindex="-1">Dog</button><button role="tab" id="kt-cat" aria-selected="false" aria-controls="k-panel" data-s="cat" tabindex="-1">Cat</button><button role="tab" id="kt-portal" aria-selected="false" aria-controls="k-soon" data-s="portal" tabindex="-1">Data Portal Demo</button></div></div>
+    <div class="k-body" id="k-panel" role="tabpanel" aria-labelledby="kt-human">
+      <div class="k-info">
+        <p class="k-num"><span id="k-n">46</span><small>chromosomes (2n)</small></p>
+        <p id="k-p" class="mono">23 pairs</p>
+        <p id="k-sp" class="k-sp muted small"></p>
+        <ul class="k-legend" aria-label="Featured gene categories"><li><i class="c-dis"></i>Disease</li><li><i class="c-life"></i>Lifestyle</li><li><i class="c-long"></i>Longevity</li></ul>
+        <p id="k-cap" class="muted small">Lengths drawn to scale from GRCh38 (hg38).</p>
+        <p id="k-sel" class="mono small" aria-live="polite"></p>
+      </div>
+      <div class="k-stage" id="k-stage">
+        <div class="k-grid" id="k-grid" role="group" aria-label="Karyotype: select a chromosome"></div>
+        <div class="k-detail" id="k-detail" hidden></div>
+      </div>
+    </div>
+    <div class="k-soon" id="k-soon" role="tabpanel" aria-labelledby="kt-portal" hidden>
+      <div class="k-soon-art" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="k-soon-copy">
+        <p class="eyebrow mono"><span class="dot"></span>Coming soon</p>
+        <h4>Data Portal Demo</h4>
+        <p>An interactive preview of the GeneQuanta Data Portal will appear here, showing how assay results and epigenetic insights are explored. It is still in development, so no data is shown yet.</p>
+        <a href="#contact" class="btn btn-ghost btn-sm" data-topic="General Inquiry">Ask about early access</a>
+      </div>
+    </div>
   </div>
 
   <div class="team">
@@ -171,6 +194,8 @@
 </footer>
 <script src="assets/js/news-config.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/karyotype-data.js"></script>
+<script src="assets/js/karyotype.js"></script>
 <script src="assets/js/news.js"></script>
 </body>
 </html>

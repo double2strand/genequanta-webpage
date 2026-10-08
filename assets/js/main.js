@@ -109,7 +109,7 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
 /* pipeline explorer */
 (() => { const D = [
   { t: 'Time-Course Analysis', d: 'Advanced temporal profiling of epigenetic changes over time periods', b: ['Dynamic Tracking', 'Temporal Patterns', 'Longitudinal Studies'] },
-  { t: 'Epigenetic Profiling', d: 'Profiling of post-translationally modified proteins (histones and transcription factors) bound to DNA', b: ['Histone PTMs', 'Transcription Factors', 'Protein–DNA Binding'] },
+  { t: 'Epigenetic Profiling', d: 'Mapping active epigenetic zones into longevity and lifestyle profiles', b: ['Active Epigenetic Zones', 'Longevity & Lifestyle Profiles'] },
   { t: 'High-Throughput Processing', d: 'Scalable biomarker panel development and analysis', b: ['Batch Processing', 'Quality Control', 'Automated Workflows'] },
   { t: 'Real-Time Analytics', d: 'Instant data processing and visualization capabilities', b: ['Live Updates', 'Interactive Dashboards', 'API Access'] }];
   let cur = 0, timer; const btns = $$('.pipe-steps button'), c = $('#pipe-viz'); let x, W, H; const rs = () => [x, W, H] = fit(c); rs(); addEventListener('resize', rs);
@@ -142,7 +142,7 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
           x.strokeStyle = '#00a99d'; x.lineWidth = 3.5; x.lineCap = 'round'; for (let k = 0; k < 2; k++) { x.beginPath(); x.ellipse(X, dy + bob + (k - .5) * 9, r * 1.1, 5, -.1, Math.PI * 1.05, Math.PI * -.05, true); x.stroke(); } x.lineCap = 'butt'; }
         else { const r = 10; [[-6, -3, '#ff6f8c'], [6, 3, '#ffa94d']].forEach(([ox, oy, c2]) => { const g = x.createRadialGradient(X + ox - 3, dy - 10 + oy - 3 + bob, 1, X + ox, dy - 10 + oy + bob, r); g.addColorStop(0, '#fff'); g.addColorStop(1, c2); x.fillStyle = g; x.beginPath(); x.arc(X + ox, dy - 10 + oy + bob, r, 0, 7); x.fill(); }); x.restore(); }
         const cy = dy - (p.k === 'nuc' ? 34 : 34) + bob; x.font = '600 10px JetBrains Mono'; const w = x.measureText(p.m).width + 10; x.fillStyle = MC[p.m]; x.beginPath(); x.roundRect(X - w / 2 + (p.k === 'nuc' ? 14 : 12), cy - 8, w, 16, 8); x.fill(); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(p.m, X + (p.k === 'nuc' ? 14 : 12), cy + .5); x.textAlign = 'left'; x.textBaseline = 'alphabetic'; });
-      x.fillStyle = 'rgba(11,21,51,.62)'; x.font = '10px JetBrains Mono'; x.fillText('modified-protein occupancy', 24, 18); x.fillText(W < 520 ? 'DNA · bound nucleosomes & TFs' : 'DNA · nucleosomes & TFs carrying PTMs (Ac · Me · P · Ub)', 24, H - 10);
+      x.fillStyle = 'rgba(11,21,51,.62)'; x.font = '10px JetBrains Mono'; x.fillText('modified-protein occupancy', 24, 18);
     } else if (cur === 2) { // HT: plate wells lighting in sequence
       const R = 8, C = 12, cw = (W - 40) / C, ch = (H - 40) / R, k = Math.floor(t * 14) % (R * C);
       for (let r = 0; r < R; r++) for (let cc = 0; cc < C; cc++) { const id = r * C + cc, done = id < k, v = (Math.sin(id * 12.9898) * 43758.5453) % 1; x.beginPath(); x.arc(20 + cw * (cc + .5), 20 + ch * (r + .5), Math.min(cw, ch) * .32, 0, 7);
@@ -164,20 +164,7 @@ if (!RM && matchMedia('(hover:hover)').matches) $$('.tilt').forEach(el => {
     for (let k = 0; k < 3; k++) { x.beginPath(); for (let i = 0; i <= 50; i++) { const X = 10 + i / 50 * (W - 20), v = kit ? .5 + .3 * Math.sin(i * .2 + k * 2 + t * .8) * Math.exp(-((i - 25) ** 2) / 600) : .55 + .25 * Math.sin(i * .18 + k + t * .7) - k * .1; i ? x.lineTo(X, 15 + v * (H - 30)) : x.moveTo(X, 15 + v * (H - 30)); } x.strokeStyle = ['#00a99d', '#6d4bff', '#ff4d6d'][k]; x.lineWidth = 2; x.stroke(); } };
   RM ? draw(0) : loop(c, draw);
 })();
-/* karyotype */
-(() => { const S = { human: [46, '23 pairs'], dog: [78, '39 pairs'], cat: [38, '19 pairs'] }, svg = $('#k-svg');
-  const draw = sp => { const n = S[sp][0] / 2, W = 900, H = 240; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = ''; const perRow = n > 24 ? 20 : n > 20 ? 12 : 10, rows = Math.ceil(n / perRow), cw = W / perRow;
-    for (let i = 0; i < n; i++) { const r = Math.floor(i / perRow), c = i % perRow, max = H / rows - 26, len = max * (sp === 'dog' ? (i === n - 1 ? .9 : .9 - i / n * .55) : (1 - i / n * .6)) * (i === n - 1 && sp !== 'dog' ? .7 : 1), x0 = c * cw + cw / 2, y0 = r * (H / rows) + 6 + (max - len);
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.setAttribute('tabindex', 0); g.setAttribute('aria-label', (i === n - 1 ? 'Sex chromosomes' : 'Pair ' + (i + 1)));
-      const cen = sp === 'dog' && i < n - 1 ? .06 : .35 + (i % 3) * .08, hue = 200 + i / n * 150;
-      g.innerHTML = [-6, 3].map(dx => `<rect x="${x0 + dx}" y="${y0}" width="7" height="${len}" rx="3.5" fill="hsl(${hue},78%,52%)" opacity=".9"/>` + [.2, .5, .72].map(f => `<rect x="${x0 + dx}" y="${y0 + len * f}" width="7" height="${len * .06}" fill="rgba(255,255,255,.6)"/>`).join('') + `<rect x="${x0 + dx - 1}" y="${y0 + len * cen}" width="9" height="3" fill="#ffffff"/>`).join('') + `<text x="${x0}" y="${y0 + len + 14}" fill="#5a6785" font-size="10" font-family="JetBrains Mono" text-anchor="middle">${i === n - 1 ? (sp === 'human' ? 'XY' : 'XY') : i + 1}</text>`;
-      const on = () => { svg.querySelectorAll('g').forEach(o => o.classList.toggle('dim', o !== g)); g.classList.add('hi'); $('#k-sel').textContent = '▸ ' + g.getAttribute('aria-label'); };
-      const off = () => { svg.querySelectorAll('g').forEach(o => o.classList.remove('dim', 'hi')); $('#k-sel').textContent = ''; };
-      g.addEventListener('pointerenter', on); g.addEventListener('focus', on); g.addEventListener('pointerleave', off); g.addEventListener('blur', off); svg.appendChild(g); } };
-  const set = sp => { $$('[data-s]').forEach(b => b.setAttribute('aria-selected', b.dataset.s === sp)); const el = $('#k-n'), from = +el.textContent, to = S[sp][0], t0 = performance.now();
-    const st = t => { const p = RM ? 1 : Math.min(1, (t - t0) / 600); el.textContent = Math.round(from + (to - from) * p); if (p < 1) requestAnimationFrame(st); }; requestAnimationFrame(st); $('#k-p').textContent = S[sp][1]; draw(sp); };
-  $$('[data-s]').forEach(b => b.onclick = () => set(b.dataset.s)); set('human');
-})();
+/* karyotype: see assets/js/karyotype.js */
 /* contact */
 (() => { const f = $('#cform'), types = $$('[role=radio]', f); let type = 'General Inquiry';
   const pick = name => types.forEach(b => { const on = b.textContent === name; b.setAttribute('aria-checked', on); if (on) type = name; });
