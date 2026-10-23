@@ -57,3 +57,17 @@
     addEventListener('load', () => setTimeout(() => go(false), 120), { once: true });
   }
 })();
+
+/* Video cards: autoplay muted when in view, pause when out; respect reduced motion and user pauses */
+(function(){
+  var vids=[].slice.call(document.querySelectorAll('video.gq-video'));if(!vids.length)return;
+  var rm=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  vids.forEach(function(v){v.muted=true;v._auto=false;v._userStop=false;
+    v.addEventListener('pause',function(){if(!v._auto&&!v.ended)v._userStop=true;v._auto=false});
+    v.addEventListener('play',function(){if(!v._auto)v._userStop=false;v._auto=false});});
+  if(rm||!('IntersectionObserver' in window))return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){var v=e.target;
+    if(e.isIntersecting&&e.intersectionRatio>=.5){if(v.paused&&!v._userStop){v._auto=true;var p=v.play();if(p&&p.catch)p.catch(function(){v._auto=false})}}
+    else if(!v.paused){v._auto=true;v.pause()}})},{threshold:[0,.5]});
+  vids.forEach(function(v){io.observe(v)});
+})();
